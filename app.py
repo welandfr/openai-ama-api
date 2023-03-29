@@ -39,3 +39,8 @@ def index():
     return "USAGE: POST question as a JSON string."
 
 
+if not os.getenv("API_KEY"):
+    print("WARNING: API_KEY not set in ENV!")
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5005)
