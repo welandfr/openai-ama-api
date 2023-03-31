@@ -5,7 +5,7 @@ A passthrough API for sharing your dear-bought OpenAPI API account.
 
 ## Usage:
 
-- Create `.env` (from `.env.example`) and add you keys
+- Create `.env` (from `.env-example`) and add you keys
 - Send requests as a simple JSON string
 
 ### REQUEST:
