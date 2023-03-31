@@ -18,3 +18,5 @@ build/
 .env
 
 .devcontainer
+
+test-rahti.http
