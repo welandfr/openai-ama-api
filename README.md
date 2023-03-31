@@ -1,7 +1,7 @@
 # OpenAPI Ask-Me-Anything passthrough API
 ### Fredrik Welander
 
-A "passthrough" API for sharing your 
+A passthrough API for sharing your dear-bought OpenAPI API account.
 
 ## Usage:
 
