@@ -11,14 +11,12 @@ app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
 @app.route("/", methods=("GET", "POST"))
 def index():
 
-    print(app.config['tokens_used'])
-
     api_key = request.args.get('api_key', None)
 
     if api_key not in authorized_keys:
         return { "msg": "Bad/no API_KEY provided"}, 401
 
-    token_limit = int(os.getenv("TOKEN_LIMIT"))
+    token_limit = int(os.getenv("TOKEN_LIMIT", 1000))
 
     if request.method == "POST":
 
