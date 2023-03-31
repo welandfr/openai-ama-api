@@ -1,5 +1,7 @@
 
-# Simulation
+# Install the REST Client extension to use this file (mkloubert.vs-rest-api)
+
+# Simulation 
 
 POST http://localhost:8080?simulation=1&api_key={{$dotenv API_KEY}}
 Content-Type: application/json
@@ -8,8 +10,15 @@ Content-Type: application/json
 
 ###
 
-# REAL requests (costs tokens)
+# REAL request main key (costs tokens)
 POST http://localhost:8080?api_key={{$dotenv API_KEY}}
 Content-Type: application/json
 
-"What are you?"
+"Tell me a joke"
+
+###
+# REAL request user 1 (costs tokens)
+POST http://localhost:8080?api_key=user1k3y
+Content-Type: application/json
+
+"Tell me a joke"

@@ -3,32 +3,41 @@ import openai
 from flask import Flask, request
 
 app = Flask(__name__)
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
-TOKEN_QUOTA = 1000
-app.config['tokens_used'] = 0
+openai.api_key = os.getenv("OPENAI_API_KEY")
+authorized_keys = (os.getenv("API_KEY", "") + "," + os.getenv("USER_KEYS", "")).split(",")
+app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
 
 @app.route("/", methods=("GET", "POST"))
 def index():
-    if request.args.get('api_key', None) != os.getenv("API_KEY"):
+
+    print(app.config['tokens_used'])
+
+    api_key = request.args.get('api_key', None)
+
+    if api_key not in authorized_keys:
         return { "msg": "Bad/no API_KEY provided"}, 401
+
+    token_limit = int(os.getenv("TOKEN_LIMIT"))
 
     if request.method == "POST":
 
         question = json.loads(request.data)
 
+        # Return simulated response 
         if request.args.get('simulation'):
             return { 
                 'question': question,
                 'answer': 'The answer is 42.',
                 'model':'simulation',
                 'tokens_cost': 0,
-                'tokens_left': TOKEN_QUOTA-app.config['tokens_used']
+                'tokens_left': token_limit-app.config['tokens_used'][api_key]
             }
             
-        if app.config['tokens_used'] > TOKEN_QUOTA: 
-            return { "msg": f"TOKEN QUOTA EXCEEDED ({TOKEN_QUOTA})"}, 400
+        if app.config['tokens_used'][request.args.get('api_key')] > token_limit: 
+            return { "msg": "Error: Token limit exceeded."}, 400
         
+        # Do the OpenAPI request
         try: 
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -40,14 +49,16 @@ def index():
         except Exception as e:
             return { "msg": f"OpenAI API returned an Error: {e}"}, 500
 
-        app.config['tokens_used'] += response.usage.total_tokens
+        # Only increase token count for normal users
+        if (api_key != os.getenv("API_KEY")):
+            app.config['tokens_used'][api_key] += response.usage.total_tokens
 
         return { 
             'question': question,
             'answer': response.choices[0].message.content,
             'model': response.model,
             'tokens_cost': response.usage.total_tokens,
-            'tokens_left': TOKEN_QUOTA-app.config['tokens_used']
+            'tokens_left': token_limit-app.config['tokens_used'][api_key]
         }
     
     return { "msg": "USAGE: POST question as a JSON string."}
