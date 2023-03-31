@@ -1,0 +1,15 @@
+
+# Simulation
+
+POST http://localhost:8080?simulation=1&api_key={{$dotenv API_KEY}}
+Content-Type: application/json
+
+"Simulation question..."
+
+###
+
+# REAL requests (costs tokens)
+POST http://localhost:8080?api_key={{$dotenv API_KEY}}
+Content-Type: application/json
+
+"What are you?"
