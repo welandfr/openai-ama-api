@@ -1,5 +1,6 @@
 import os, json
 import openai
+from datetime import datetime
 from flask import Flask, request
 from flask_cors import CORS 
 
@@ -9,6 +10,7 @@ CORS(app)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 authorized_keys = (os.getenv("API_KEY", "") + "," + os.getenv("USER_KEYS", "")).split(",")
 app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
+app.config['current_date'] = datetime.now().date()
 
 @app.route("/", methods=("GET", "POST"))
 def index():
@@ -26,6 +28,11 @@ def index():
             question = json.loads(request.data)
         except:
             return { "msg": "Error: Bad JSON"}, 400
+
+        # Reset used tokens for all users on first day change
+        if app.config['current_date'] != datetime.now().date():
+            app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
+            app.config['current_date'] = datetime.now().date()
 
         # Return simulated response 
         if request.args.get('simulation'):

@@ -21,4 +21,18 @@ Content-Type: application/json
 POST http://localhost:8080?api_key=user1k3y
 Content-Type: application/json
 
-"Tell me a joke"
+"Tell me a fun fact"
+
+###
+# REAL request user 2 (costs tokens)
+POST http://localhost:8080?api_key=user2k3y
+Content-Type: application/json
+
+"Why is pluto not a planet?"
+
+###
+# REAL request user 1 SIMULATION
+POST http://localhost:8080?simulation=true&api_key=user1k3y
+Content-Type: application/json
+
+"Tell me a fun fact"
