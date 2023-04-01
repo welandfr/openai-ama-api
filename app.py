@@ -22,7 +22,10 @@ def index():
 
     if request.method == "POST":
 
-        question = json.loads(request.data)
+        try: 
+            question = json.loads(request.data)
+        except:
+            return { "msg": "Error: Bad JSON"}, 400
 
         # Return simulated response 
         if request.args.get('simulation'):
@@ -50,7 +53,7 @@ def index():
             return { "msg": f"OpenAI API returned an Error: {e}"}, 500
 
         # Only increase token count for normal users
-        if (api_key != os.getenv("API_KEY")):
+        if api_key != os.getenv("API_KEY"):
             app.config['tokens_used'][api_key] += response.usage.total_tokens
 
         return { 
