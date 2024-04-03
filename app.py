@@ -1,5 +1,6 @@
 import os, json
 import openai
+from openai import OpenAI
 from datetime import datetime
 from flask import Flask, request
 from flask_cors import CORS 
@@ -7,10 +8,14 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
 authorized_keys = (os.getenv("API_KEY", "") + "," + os.getenv("USER_KEYS", "")).split(",")
 app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
 app.config['current_date'] = datetime.now().date()
+
+client = OpenAI(
+    # This is the default and can be omitted
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
 @app.route("/", methods=("GET", "POST"))
 def index():
@@ -49,13 +54,20 @@ def index():
         
         # Do the OpenAPI request
         try: 
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[ {"role": "user", "content": question} ]
             )
 
-        except openai.error.AuthenticationError as e:
-            return { "msg": f"OpenAI AuthenticationError: {e}"}, 401
+        except openai.APIConnectionError as e:
+            print("The server could not be reached")
+            print(e.__cause__)  # an underlying Exception, likely raised within httpx.
+        except openai.RateLimitError as e:
+            print("A 429 status code was received; we should back off a bit.")
+        except openai.APIStatusError as e:
+            print("Another non-200-range status code was received")
+            print(e.status_code)
+            print(e.response)
         except Exception as e:
             return { "msg": f"OpenAI API returned an Error: {e}"}, 500
 
