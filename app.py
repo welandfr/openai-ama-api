@@ -22,7 +22,7 @@ def index():
 
     api_key = request.args.get('api_key', None)
 
-    if api_key not in authorized_keys:
+    if api_key not in authorized_keys or len(api_key.strip()) == 0:
         return { "msg": "Bad/no API_KEY provided"}, 401
 
     token_limit = int(os.getenv("TOKEN_LIMIT", 1000))
@@ -30,11 +30,12 @@ def index():
     if request.method == "POST":
 
         try: 
-            question = json.loads(request.data)
+            # Throw error if request format not correct
+            question = json.loads(request.data).strip()
         except:
-            return { "msg": "Error: Bad JSON"}, 400
+            return { "msg": "Error: Bad request"}, 400
 
-        # Reset used tokens for all users on first day change
+        # Reset used tokens for all users on first change of current_date
         if app.config['current_date'] != datetime.now().date():
             app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
             app.config['current_date'] = datetime.now().date()
