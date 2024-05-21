@@ -11,6 +11,7 @@ CORS(app)
 authorized_keys = (os.getenv("API_KEY", "") + "," + os.getenv("USER_KEYS", "")).split(",")
 app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
 app.config['current_date'] = datetime.now().date()
+model = os.environ.get("MODEL", "gpt-3.5-turbo")
 
 client = OpenAI(
     # This is the default and can be omitted
@@ -56,7 +57,7 @@ def index():
         # Do the OpenAPI request
         try: 
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model=model,
                 messages=[ {"role": "user", "content": question} ]
             )
 
