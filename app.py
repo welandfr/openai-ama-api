@@ -12,6 +12,7 @@ authorized_keys = (os.getenv("API_KEY", "") + "," + os.getenv("USER_KEYS", "")).
 app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
 app.config['current_date'] = datetime.now().date()
 model = os.environ.get("MODEL", "gpt-3.5-turbo")
+max_tokens = os.environ.get("MAX_TOKENS", 500) # Max generated tokens
 
 client = OpenAI(
     # This is the default and can be omitted
@@ -58,7 +59,8 @@ def index():
         try: 
             response = client.chat.completions.create(
                 model=model,
-                messages=[ {"role": "user", "content": question} ]
+                messages=[ {"role": "user", "content": question} ],
+                max_tokens=max_tokens
             )
 
         except openai.APIConnectionError as e:
