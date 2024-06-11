@@ -25,7 +25,7 @@ def index():
     api_key = request.args.get('api_key', None)
 
     if api_key not in authorized_keys or len(api_key.strip()) == 0:
-        return { "msg": "Bad/no API_KEY provided"}, 401
+        return { "msg": "Bad/no API_KEY provided", "v": "2.0" }, 401
 
     token_limit = int(os.getenv("TOKEN_LIMIT", 1000))
 
