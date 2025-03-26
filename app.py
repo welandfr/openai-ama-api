@@ -1,12 +1,14 @@
-import os, json
+import os, json, dotenv
 import openai
 from openai import OpenAI
 from datetime import datetime
 from flask import Flask, request
-from flask_cors import CORS 
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
+dotenv.load_dotenv()
 
 authorized_keys = (os.getenv("API_KEY", "") + "," + os.getenv("USER_KEYS", "")).split(",")
 app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
@@ -31,7 +33,7 @@ def index():
 
     if request.method == "POST":
 
-        try: 
+        try:
             # Throw error if request format not correct
             question = json.loads(request.data).strip()
         except:
@@ -42,21 +44,21 @@ def index():
             app.config['tokens_used'] = dict.fromkeys(authorized_keys, 0)
             app.config['current_date'] = datetime.now().date()
 
-        # Return simulated response 
+        # Return simulated response
         if request.args.get('simulation'):
-            return { 
+            return {
                 'question': question,
                 'answer': 'The answer is 42.',
                 'model':'simulation',
                 'tokens_cost': 0,
                 'tokens_left': token_limit-app.config['tokens_used'][api_key]
             }
-            
-        if app.config['tokens_used'][request.args.get('api_key')] > token_limit: 
+
+        if app.config['tokens_used'][request.args.get('api_key')] > token_limit:
             return { "msg": "Error: Token limit exceeded."}, 400
-        
+
         # Do the OpenAPI request
-        try: 
+        try:
             response = client.chat.completions.create(
                 model=model,
                 messages=[ {"role": "user", "content": question} ],
@@ -79,14 +81,14 @@ def index():
         if api_key != os.getenv("API_KEY"):
             app.config['tokens_used'][api_key] += response.usage.total_tokens
 
-        return { 
+        return {
             'question': question,
             'answer': response.choices[0].message.content,
             'model': response.model,
             'tokens_cost': response.usage.total_tokens,
             'tokens_left': token_limit-app.config['tokens_used'][api_key]
         }
-    
+
     return { "msg": "USAGE: POST question as a JSON string."}
 
 if __name__ == "__main__":
